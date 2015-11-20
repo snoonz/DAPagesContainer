@@ -83,10 +83,11 @@
                                                                      self.topBarHeight,
                                                                      CGRectGetWidth(self.view.frame),
                                                                      CGRectGetHeight(self.view.frame) - self.topBarHeight)];
-    self.scrollView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     self.scrollView.delegate = self;
     self.scrollView.pagingEnabled = YES;
     self.scrollView.showsHorizontalScrollIndicator = NO;
+    self.scrollView.showsVerticalScrollIndicator = NO;
+    self.scrollView.bounces = NO;
     [self.view addSubview:self.scrollView];
     [self startObservingContentOffsetForScrollView:self.scrollView];
     
@@ -178,6 +179,7 @@
             for (NSUInteger i = 0; i < self.viewControllers.count; i++) {
                 UIViewController *viewController = self.viewControllers[i];
                 viewController.view.frame = CGRectMake(i * self.scrollWidth, 0., self.scrollWidth, self.scrollHeight);
+                [self addChildViewController:viewController];
                 [self.scrollView addSubview:viewController.view];
             }
             self.scrollView.contentSize = CGSizeMake(self.scrollWidth * self.viewControllers.count, self.scrollHeight);
@@ -277,7 +279,7 @@
         _viewControllers = viewControllers;
         self.topBar.itemTitles = [viewControllers valueForKey:@"title"];
         for (UIViewController *viewController in viewControllers) {
-            [self addChildViewController:viewController];
+            [viewController willMoveToParentViewController:self];
             viewController.view.frame = CGRectMake(0., 0., CGRectGetWidth(self.scrollView.frame), self.scrollHeight);
             [self.scrollView addSubview:viewController.view];
             [viewController didMoveToParentViewController:self];

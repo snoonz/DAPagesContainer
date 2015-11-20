@@ -8,6 +8,7 @@
 
 #import <UIKit/UIKit.h>
 
+@protocol DAPagesContainerDelegate;
 
 @interface DAPagesContainer : UIViewController
 
@@ -21,13 +22,13 @@
 /**
  An index of the selected view controller.
  */
-@property (assign, nonatomic) NSUInteger selectedIndex;
+@property (assign, nonatomic) NSInteger selectedIndex;
 
 /**
  A hight of the top bar. Every time this value is changed, view objects for all the view controllers are resized.
  This is 44. by default.
  */
-@property (assign, nonatomic) NSUInteger topBarHeight;
+@property (assign, nonatomic) NSInteger topBarHeight;
 
 /**
  An optional image page for the page indicator view
@@ -75,6 +76,7 @@
  This is white by default.
  */
 @property (strong, nonatomic) UIColor *selectedPageItemTitleColor;
+@property (assign, nonatomic) NSObject<DAPagesContainerDelegate> *delegate;
 
 /**
  A size of the spaces between the top bar items.
@@ -95,11 +97,18 @@
  @param animated Defines whether to present the corresponding view controller animated
  @discussion If 'animated' is YES and the newly selected view is not "the closest neighbor" of the previous selected view, all the intermediate views will be skipped for the sake of nice animation
  */
-- (void)setSelectedIndex:(NSUInteger)selectedIndex animated:(BOOL)animated;
+- (void)setSelectedIndex:(NSInteger)selectedIndex animated:(BOOL)animated;
 
 /**
  Makes sure that view objects for all the view controllers are properly resized to fit the container bounds after device orientation was changed
  */
 - (void)updateLayoutForNewOrientation:(UIInterfaceOrientation)orientation;
+- (void)layoutSubviews;
+
+@end
+
+@protocol DAPagesContainerDelegate <NSObject>
+
+- (void)pagesContainer:(DAPagesContainer *)container didSelectIndex:(NSUInteger)index;
 
 @end
