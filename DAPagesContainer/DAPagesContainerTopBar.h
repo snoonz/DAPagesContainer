@@ -28,6 +28,10 @@
 @property (readonly, strong, nonatomic) UIScrollView *scrollView;
 @property (weak, nonatomic) id<DAPagesContainerTopBarDelegate> delegate;
 
+@property (nonatomic) CGFloat itemViewWidth;
+@property (nonatomic) CGFloat itemsSpace;
+@property (nonatomic) CGFloat itemsLineExtend;
+
 - (CGPoint)centerForSelectedItemAtIndex:(NSUInteger)index;
 - (CGPoint)contentOffsetForSelectedItemAtIndex:(NSUInteger)index;
 

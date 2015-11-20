@@ -42,6 +42,12 @@
 @property (assign, nonatomic) CGSize pageIndicatorViewSize;
 
 /**
+ A color of page indicator.
+ @discussion if this property is not nil 'pageIndicatorColor' property value will be ignored
+ */
+@property (assign, nonatomic) UIColor *pageIndicatorColor;
+
+/**
  An optional background image of the top bar.
  */
 @property (strong, nonatomic) UIImage *topBarBackgroundImage;
@@ -69,6 +75,19 @@
  This is white by default.
  */
 @property (strong, nonatomic) UIColor *selectedPageItemTitleColor;
+
+/**
+ A size of the spaces between the top bar items.
+ This is 30.0 by default.
+ */
+@property (assign, nonatomic) CGFloat topBarItemsSpace;
+
+/**
+ A length of the lines under the items.
+ This value extends the lines from the edge of items.
+ This is 10.0 by default.
+ */
+@property (assign, nonatomic) CGFloat topBarItemsLineExtend;
 
 /**
  Changes 'selectedIndex' property value and navigates to the newly selected view controller

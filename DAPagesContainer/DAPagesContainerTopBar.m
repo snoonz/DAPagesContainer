@@ -22,9 +22,6 @@
 
 @implementation DAPagesContainerTopBar
 
-CGFloat const DAPagesContainerTopBarItemViewWidth = 100.;
-CGFloat const DAPagesContainerTopBarItemsOffset = 30.;
-
 - (id)initWithFrame:(CGRect)frame
 {
     self = [super initWithFrame:frame];
@@ -35,6 +32,9 @@ CGFloat const DAPagesContainerTopBarItemsOffset = 30.;
         [self addSubview:self.scrollView];
         self.font = [UIFont systemFontOfSize:14];
         self.itemTitleColor = [UIColor whiteColor];
+        self.itemViewWidth = 100.;
+        self.itemsSpace = 30.;
+        self.itemsLineExtend = 10.;
     }
     return self;
 }
@@ -44,8 +44,6 @@ CGFloat const DAPagesContainerTopBarItemsOffset = 30.;
 - (CGPoint)centerForSelectedItemAtIndex:(NSUInteger)index
 {
     CGPoint center = ((UIView *)self.itemViews[index]).center;
-    CGPoint offset = [self contentOffsetForSelectedItemAtIndex:index];
-    center.x -= offset.x - (CGRectGetMinX(self.scrollView.frame));
     return center;
 }
 
@@ -105,7 +103,7 @@ CGFloat const DAPagesContainerTopBarItemsOffset = 30.;
 
 - (UIButton *)addItemView
 {
-    CGRect frame = CGRectMake(0., 0., DAPagesContainerTopBarItemViewWidth, CGRectGetHeight(self.frame));
+    CGRect frame = CGRectMake(0., 0., self.itemViewWidth, CGRectGetHeight(self.frame));
     UIButton *itemView = [[UIButton alloc] initWithFrame:frame];
     [itemView addTarget:self action:@selector(itemViewTapped:) forControlEvents:UIControlEventTouchUpInside];
     itemView.titleLabel.font = self.font;
@@ -121,12 +119,12 @@ CGFloat const DAPagesContainerTopBarItemsOffset = 30.;
 
 - (void)layoutItemViews
 {
-    CGFloat x = DAPagesContainerTopBarItemsOffset;
+    CGFloat x = self.itemsSpace;
     for (NSUInteger i = 0; i < self.itemViews.count; i++) {
-        CGFloat width = [self.itemTitles[i] sizeWithFont:self.font].width;
+        CGFloat width = [self.itemTitles[i] sizeWithFont:self.font].width + self.itemsLineExtend * 2;
         UIView *itemView = self.itemViews[i];
         itemView.frame = CGRectMake(x, 0., width, CGRectGetHeight(self.frame));
-        x += width + DAPagesContainerTopBarItemsOffset;
+        x += width + self.itemsSpace;
     }
     self.scrollView.contentSize = CGSizeMake(x, CGRectGetHeight(self.scrollView.frame));
     CGRect frame = self.scrollView.frame;

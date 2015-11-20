@@ -24,11 +24,15 @@
 {
     [super viewDidLoad];
     self.pagesContainer = [[DAPagesContainer alloc] init];
-    [self.pagesContainer willMoveToParentViewController:self];
+    [self addChildViewController:self.pagesContainer];
     self.pagesContainer.view.frame = self.view.bounds;
     self.pagesContainer.view.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     [self.view addSubview:self.pagesContainer.view];
     [self.pagesContainer didMoveToParentViewController:self];
+    
+    self.pagesContainer.pageIndicatorViewSize = CGSizeMake(30.0, 8.0);
+    self.pagesContainer.selectedPageItemTitleColor = [UIColor colorWithRed:1.0 green:0.7 blue:0.7 alpha:1.0];
+    self.pagesContainer.pageIndicatorColor = [UIColor redColor];
     
     UIViewController *beaverViewController = [[UIViewController alloc] init];
     UIImageView *beaverImageView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"beaver.jpg"]];

@@ -33,20 +33,20 @@
 
 #pragma mark - Private
 
+// Line Indicator.
+// Custom by Yuichi Senga.
 - (void)drawRect:(CGRect)rect
 {
     CGContextRef context = UIGraphicsGetCurrentContext();
     
+    [self.color set];
     CGContextClearRect(context, rect);
     
+    CGContextSetLineWidth(context, self.bounds.size.height);
     CGContextBeginPath(context);
-    CGContextMoveToPoint   (context, CGRectGetMinX(rect), CGRectGetMinY(rect));
-    CGContextAddLineToPoint(context, CGRectGetMidX(rect), CGRectGetMaxY(rect));
-    CGContextAddLineToPoint(context, CGRectGetMaxX(rect), CGRectGetMinY(rect));
-    CGContextClosePath(context);
-    
-    CGContextSetFillColorWithColor(context, self.color.CGColor);
-    CGContextFillPath(context);
+    CGContextMoveToPoint   (context, CGRectGetMinX(rect), CGRectGetMinY(rect) + 0.5);
+    CGContextAddLineToPoint(context, CGRectGetMaxX(rect), CGRectGetMinY(rect) + 0.5);
+    CGContextStrokePath(context);
 }
 
 

@@ -11,6 +11,11 @@
 #import "DAPagesContainerTopBar.h"
 #import "DAPageIndicatorView.h"
 
+//カスタマイズ
+// #PageIndicatorをメニューのスクロールビューのサブビューに移動
+// #PageIndicatorの位置を変更
+// #PageIndicatorの色を変更できるように変更
+// #pageIndicatorの幅がボタンサイズに合わせて自動変更されるように変更
 
 @interface DAPagesContainer () <DAPagesContainerTopBarDelegate, UIScrollViewDelegate>
 
@@ -111,6 +116,15 @@
     [self layoutSubviews];
 }
 
+- (void)viewDidLayoutSubviews {
+    [super viewDidLayoutSubviews];
+    
+    //ページ移動中の呼び出し時はlayoutSubViewsメソッドを呼び出さない
+    if (self.shouldObserveContentOffset == YES) {
+        [self layoutSubviews];
+    }
+}
+
 #pragma mark - Public
 
 - (void)setSelectedIndex:(NSUInteger)selectedIndex animated:(BOOL)animated
@@ -152,6 +166,11 @@
         [UIView animateWithDuration:0.3 delay:0 options:UIViewAnimationOptionBeginFromCurrentState animations:^{
             self.pageIndicatorView.center = CGPointMake([self.topBar centerForSelectedItemAtIndex:selectedIndex].x,
                                                         [self pageIndicatorCenterY]);
+            CGFloat indicatorWidth = self.pageIndicatorView.bounds.size.width;
+            indicatorWidth = nextSelectdItem.bounds.size.width;
+            self.pageIndicatorView.bounds = CGRectMake(0.0, 0.0, indicatorWidth, self.pageIndicatorView.bounds.size.height);
+            
+            
             self.topBar.scrollView.contentOffset = [self.topBar contentOffsetForSelectedItemAtIndex:selectedIndex];
             [previosSelectdItem setTitleColor:self.pageItemsTitleColor forState:UIControlStateNormal];
             [nextSelectdItem setTitleColor:self.selectedPageItemTitleColor forState:UIControlStateNormal];
@@ -168,6 +187,10 @@
         }];
     }
     _selectedIndex = selectedIndex;
+    
+    CGFloat indicatorWidth = self.pageIndicatorView.bounds.size.width;
+    indicatorWidth = nextSelectdItem.bounds.size.width;
+    self.pageIndicatorView.bounds = CGRectMake(0,0, indicatorWidth, self.pageIndicatorView.bounds.size.height);
 }
 
 - (void)updateLayoutForNewOrientation:(UIInterfaceOrientation)orientation
@@ -182,8 +205,15 @@
     if ([self.pageIndicatorView isKindOfClass:[DAPageIndicatorView class]]) {
         if (!CGSizeEqualToSize(self.pageIndicatorView.frame.size, size)) {
             _pageIndicatorViewSize = size;
+            self.pageIndicatorView.bounds = CGRectMake(0.0, 0.0, self.pageIndicatorViewSize.width, self.pageIndicatorViewSize.height);
             [self layoutSubviews];
         }
+    }
+}
+
+- (void)setPageIndicatorColor:(UIColor *)color {
+    if ([self.pageIndicatorView isKindOfClass:[DAPageIndicatorView class]]) {
+        [(DAPageIndicatorView *)self.pageIndicatorView setColor:color];
     }
 }
 
@@ -213,9 +243,6 @@
 {
     _topBarBackgroundColor = topBarBackgroundColor;
     self.topBar.backgroundColor = topBarBackgroundColor;
-    if ([self.pageIndicatorView isKindOfClass:[DAPageIndicatorView class]]) {
-        [(DAPageIndicatorView *)self.pageIndicatorView setColor:topBarBackgroundColor];
-    }
 }
 
 - (void)setTopBarBackgroundImage:(UIImage *)topBarBackgroundImage
@@ -236,13 +263,21 @@
     self.topBar.font = font;
 }
 
+- (void)setTopBarItemsSpace:(CGFloat)space {
+    self.topBar.itemsSpace = space;
+}
+
+- (void)setTopBarItemsLineExtend:(CGFloat)width {
+    self.topBar.itemsLineExtend = width;
+}
+
 - (void)setViewControllers:(NSArray *)viewControllers
 {
     if (_viewControllers != viewControllers) {
         _viewControllers = viewControllers;
         self.topBar.itemTitles = [viewControllers valueForKey:@"title"];
         for (UIViewController *viewController in viewControllers) {
-            [viewController willMoveToParentViewController:self];
+            [self addChildViewController:viewController];
             viewController.view.frame = CGRectMake(0., 0., CGRectGetWidth(self.scrollView.frame), self.scrollHeight);
             [self.scrollView addSubview:viewController.view];
             [viewController didMoveToParentViewController:self];
@@ -282,6 +317,10 @@
 - (void)layoutSubviews
 {
     self.topBar.frame = CGRectMake(0., 0., CGRectGetWidth(self.view.bounds), self.topBarHeight);
+    self.scrollView.frame = CGRectMake(0.,
+                                       self.topBarHeight,
+                                       CGRectGetWidth(self.view.frame),
+                                       CGRectGetHeight(self.view.frame) - self.topBarHeight);
     CGFloat x = 0.;
     for (UIViewController *viewController in self.viewControllers) {
         viewController.view.frame = CGRectMake(x, 0, CGRectGetWidth(self.scrollView.frame), self.scrollHeight);
@@ -297,7 +336,7 @@
 
 - (CGFloat)pageIndicatorCenterY
 {
-    return CGRectGetMaxY(self.topBar.frame) - 2. + CGRectGetHeight(self.pageIndicatorView.frame) / 2.;
+    return CGRectGetMaxY(self.topBar.frame);
 }
 
 - (UIView *)pageIndicatorView
@@ -312,7 +351,7 @@
                                                                                        self.pageIndicatorViewSize.height)];
             [(DAPageIndicatorView *)_pageIndicatorView setColor:self.topBarBackgroundColor];
         }
-        [self.view addSubview:self.pageIndicatorView];
+        [self.topBar.scrollView addSubview:self.pageIndicatorView];
     }
     return _pageIndicatorView;
 }
@@ -370,14 +409,15 @@
 
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView
 {
-    self.scrollView.userInteractionEnabled = NO;
+    //連続スワイプに対応するために変更。
+    //self.scrollView.userInteractionEnabled = NO;
 }
 
 #pragma mark - KVO
 
 - (void)observeValueForKeyPath:(NSString *)keyPath
-					  ofObject:(id)object
-						change:(NSDictionary *)change
+                      ofObject:(id)object
+                        change:(NSDictionary *)change
                        context:(void *)context
 {
     
@@ -400,7 +440,12 @@
             [self getRed:&red green:&green blue:&blue alpha:&alpha fromColor:self.pageItemsTitleColor];
             [self getRed:&highlightedRed green:&highlightedGreen blue:&highlightedBlue alpha:&highlightedAlpha fromColor:self.selectedPageItemTitleColor];
             
-            CGFloat absRatio = fabsf(ratio);
+            CGFloat absRatio = fabs(ratio);
+            if (absRatio > 1.0) {
+                _selectedIndex = targetIndex;
+                absRatio = 1.0;
+            }
+            
             UIColor *prev = [UIColor colorWithRed:red * absRatio + highlightedRed * (1 - absRatio)
                                             green:green * absRatio + highlightedGreen * (1 - absRatio)
                                              blue:blue * absRatio + highlightedBlue  * (1 - absRatio)
@@ -429,6 +474,9 @@
                                                             (nextItemPageIndicatorX - previousItemPageIndicatorX) * ratio,
                                                             [self pageIndicatorCenterY]);
             }
+            CGFloat indicatorWidth = previosSelectedItem.bounds.size.width;
+            indicatorWidth = (1 - absRatio) * indicatorWidth + absRatio * nextSelectedItem.bounds.size.width;
+            self.pageIndicatorView.bounds = CGRectMake(0.0, 0.0, indicatorWidth, self.pageIndicatorView.bounds.size.height);
         }
     }
 }
